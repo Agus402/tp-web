@@ -8,19 +8,69 @@
 </head>
 <body>
     <header>
+        <div class="logo-container">
+            <img src="logoapi.png" alt="Logo del sitio" id="logo">
+        </div>
         <h1>Pedido a la API de JSONPlaceholder</h1>
     </header>
     
+    <h2>Introduzca la URL de la API</h2>
     <form id="urlForm">
+        <input type="text" id="apiUrl" name="apiUrl" placeholder="Ingrese la URL de la API" required>
         <button type="submit">Pedir datos a la API</button>
     </form>
-    
+
     <section id="result"></section>
     
     <footer>
-        <p>Diseño web</p>
+        <p>&copy; 2024 Diseño wweb </p>
+       
     </footer>
 
-    <script src="js/script.js"></script>
+    <script>
+        document.getElementById('urlForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const apiUrl = document.getElementById('apiUrl').value;
+
+            if (!apiUrl) {
+                alert("Por favor, ingrese una URL válida.");
+                return;
+            }
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const resultSection = document.getElementById('result');
+
+                    if (Array.isArray(data)) {
+                        let tableHtml = '<h3>Resultados:</h3><table><thead><tr>';
+
+                        Object.keys(data[0]).forEach(key => {
+                            tableHtml += `<th>${key.charAt(0).toUpperCase() + key.slice(1)}</th>`;
+                        });
+
+                        tableHtml += '</tr></thead><tbody>';
+
+                        data.forEach(item => {
+                            tableHtml += '<tr>';
+                            Object.values(item).forEach(value => {
+                                tableHtml += `<td>${value}</td>`;
+                            });
+                            tableHtml += '</tr>';
+                        });
+
+                        tableHtml += '</tbody></table>';
+                        resultSection.innerHTML = tableHtml;
+                    } else {
+                        resultSection.innerHTML = `<p>No se encontraron datos en formato adecuado.</p>`;
+                    }
+                })
+                .catch(error => {
+                    const resultSection = document.getElementById('result');
+                    resultSection.innerHTML = `<p>Error al realizar la solicitud: ${error.message}</p>`;
+                });
+        });
+    </script>
 </body>
 </html>
