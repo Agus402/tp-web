@@ -1,47 +1,45 @@
-const form = document.getElementById('urlForm');
-const resultSection = document.getElementById('result');
-const apiURL = 'https://jsonplaceholder.typicode.com/posts';
+    document.getElementById('apiUrl').value = 'https://jsonplaceholder.typicode.com/posts'
+        
+        document.getElementById('urlForm').addEventListener('submit', function(event) {
+            event.preventDefault();
 
-form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    try {
-        const response = await fetch(apiURL);
-        if (!response.ok) throw new Error('API no encontrada');
-        const data = await response.json();
-        mostrarDatos(data);
-    } catch (error) {
-        alert(`Error: ${error.message}`);
-    }
-});
+            const apiUrl = document.getElementById('apiUrl').value;
 
-function mostrarDatos(publicaciones) {
-    resultSection.innerHTML = '';
-    
-    if (publicaciones.length > 0) {
-        const table = document.createElement('table');
-        const headerRow = document.createElement('tr');
+            if (!apiUrl) {
+                alert("Por favor, ingrese una URL válida.");
+                return;
+            }
 
-        const headers = ['ID', 'Título', 'Cuerpo'];
-        headers.forEach(header => {
-            const th = document.createElement('th');
-            th.textContent = header;
-            headerRow.appendChild(th);
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const resultSection = document.getElementById('result');
+
+                    if (Array.isArray(data)) {
+                        let tableHtml = '<h3>Resultados:</h3><table><thead><tr>';
+
+                        Object.keys(data[0]).forEach(key => {
+                            tableHtml += `<th>${key.charAt(0).toUpperCase() + key.slice(1)}</th>`;
+                        });
+
+                        tableHtml += '</tr></thead><tbody>';
+
+                        data.forEach(item => {
+                            tableHtml += '<tr>';
+                            Object.values(item).forEach(value => {
+                                tableHtml += `<td>${value}</td>`;
+                            });
+                            tableHtml += '</tr>';
+                        });
+
+                        tableHtml += '</tbody></table>';
+                        resultSection.innerHTML = tableHtml;
+                    } else {
+                        resultSection.innerHTML = `<p>No se encontraron datos en formato adecuado.</p>`;
+                    }
+                })
+                .catch(error => {
+                    const resultSection = document.getElementById('result');
+                    resultSection.innerHTML = `<p>Error al realizar la solicitud: ${error.message}</p>`;
+                });
         });
-        table.appendChild(headerRow);
-
-        publicaciones.forEach(publicacion => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${publicacion.id}</td>
-                <td>${publicacion.title}</td>
-                <td>${publicacion.body}</td>
-            `;
-            table.appendChild(row);
-        });
-
-        resultSection.appendChild(table);
-    } else {
-        resultSection.textContent = 'No se encontraron publicaciones.';
-    }
-}
